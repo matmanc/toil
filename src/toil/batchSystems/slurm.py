@@ -263,9 +263,13 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
                           jobID: int,
                           jobName: str,
                           job_environment: Optional[Dict[str, str]]) -> List[str]:
-
-            #  Returns the sbatch command line before the script to run
-            sbatch_line = ['sbatch', '-J', f'toil_job_{jobID}_{jobName}']
+            #  Check if there is a allocation already
+            slurm_jobid = os.environment.get('SLURM_JOBID', None)
+            if slurm_jobid:
+                sbatch_line = ['srun', '-J', f'toil_job_{jobID}_{jobName}', '--jobid', slurm_jobid]
+            else
+                #  Returns the sbatch command line before the script to run
+                sbatch_line = ['sbatch', '-J', f'toil_job_{jobID}_{jobName}']
 
             environment = {}
             environment.update(self.boss.environment)
