@@ -62,7 +62,11 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
                               command: str,
                               jobName: str,
                               job_environment: Optional[Dict[str, str]] = None) -> List[str]:
-            return self.prepareSbatch(cpu, memory, jobID, jobName, job_environment) + [f'--wrap={command}']
+            sbatch_line = self.prepareSbatch(cpu, memory, jobID, jobName, job_environment)
+            if sbatch_line[0] == 'srun':
+                return sbatch_line + [f'{command}']
+            else:
+                return sbatch_line + [f'--wrap={command}']
 
         def submitJob(self, subLine):
             try:
@@ -179,6 +183,7 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
             """
             Get SLURM job exit codes for the jobs in `job_id_list` by running `scontrol`.
             :param job_id_list: list of integer batch job IDs.
+
             :return: dict of job statuses, where key is the job-id, and value is a tuple
             containing the job's state and exit code.
             """
@@ -264,10 +269,10 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
                           jobName: str,
                           job_environment: Optional[Dict[str, str]]) -> List[str]:
             #  Check if there is a allocation already
-            slurm_jobid = os.environment.get('SLURM_JOBID', None)
+            slurm_jobid = os.environ.get('SLURM_JOBID', None)
             if slurm_jobid:
                 sbatch_line = ['srun', '-J', f'toil_job_{jobID}_{jobName}', '--jobid', slurm_jobid]
-            else
+            else:
                 #  Returns the sbatch command line before the script to run
                 sbatch_line = ['sbatch', '-J', f'toil_job_{jobID}_{jobName}']
 
