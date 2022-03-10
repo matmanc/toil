@@ -268,8 +268,8 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
                           jobID: int,
                           jobName: str,
                           job_environment: Optional[Dict[str, str]]) -> List[str]:
-            #  Check if there is a allocation already
-            slurm_jobid = os.environ.get('SLURM_JOBID', None)
+            #  Check if there is an allocation already
+            slurm_jobid = os.environ.get('TOIL_SLURM_JOBID', None)
             if slurm_jobid:
                 sbatch_line = ['srun', '-J', f'toil_job_{jobID}_{jobName}', '--jobid', slurm_jobid]
             else:
